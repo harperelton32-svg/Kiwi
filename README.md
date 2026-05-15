@@ -1,33 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KIWI - Premium Mobile-First Fashion Ecommerce
+
+KIWI is a premium mobile-first fashion ecommerce website built with Next.js for fast performance and luxury styling. This project emphasizes performance, mobile optimization, and clean luxury UI.
+
+## Features
+
+- **Mobile-First Design**: Optimized for mobile devices with perfect responsiveness
+- **Fast Loading**: Lightweight code, lazy-loaded images, and optimized performance
+- **Clean UI**: Modern fashion aesthetic with white background, black typography, and gray accents
+- **Smooth Interactions**: Minimal animations using Framer Motion
+- **SEO Optimized**: Production-ready with accessibility features
+- **Component-Based**: Modular, reusable React components
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Styling**: Tailwind CSS
+- **Typography**: Google Fonts (Outfit)
+- **Animations**: Framer Motion (minimal usage)
+- **Language**: TypeScript
+
+## Pages
+
+- Home: Hero banner and featured products
+- Shop: All products grid
+- Product: Individual product page (placeholder)
+- About: Company information
+- Contact: Contact form and details
+
+## Components
+
+- MobileNavbar: Sticky navigation with mobile menu
+- HeroBanner: Full-width hero section
+- ProductGrid: Responsive product grid
+- ProductCard: Individual product display
+- CategorySection: Product category sections
+- Footer: Site footer with links
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Performance Optimizations
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Mobile-first responsive design
+- Lazy loading for all images using Next.js Image
+- Minimal JavaScript bundle
+- Server components where possible
+- Optimized fonts and CSS
 
-## Learn More
+## Build
 
-To learn more about Next.js, take a look at the following resources:
+To build for production:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run build
+```
 
 ## Deploy on Vercel
 
