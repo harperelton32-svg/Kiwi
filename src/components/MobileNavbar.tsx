@@ -19,18 +19,18 @@ export default function MobileNavbar() {
         </div>
 
         <div className="flex items-center">
-          <a href="/" className="hidden md:block text-sm font-medium hover:text-gray-600 transition-colors mr-4">
+          <Link href="/" className="hidden md:block text-sm font-medium hover:text-gray-600 transition-colors mr-4">
             Home
-          </a>
-          <a href="/shop" className="hidden md:block text-sm font-medium hover:text-gray-600 transition-colors mr-4">
+          </Link>
+          <Link href="/shop" className="hidden md:block text-sm font-medium hover:text-gray-600 transition-colors mr-4">
             Shop
-          </a>
-          <a href="/about" className="hidden md:block text-sm font-medium hover:text-gray-600 transition-colors mr-4">
+          </Link>
+          <Link href="/about" className="hidden md:block text-sm font-medium hover:text-gray-600 transition-colors mr-4">
             About
-          </a>
-          <a href="/contact" className="hidden md:block text-sm font-medium hover:text-gray-600 transition-colors mr-4">
+          </Link>
+          <Link href="/contact" className="hidden md:block text-sm font-medium hover:text-gray-600 transition-colors mr-4">
             Contact
-          </a>
+          </Link>
           <Link
             href="/cart"
             className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -83,24 +83,24 @@ export default function MobileNavbar() {
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200">
           <div className="px-4 py-2 space-y-2">
-            <a
+            <Link
               href="/"
               className="block py-2 text-sm font-medium hover:text-gray-600 transition-colors"
             >
               Home
-            </a>
-            <a
+            </Link>
+            <Link
               href="/shop"
               className="block py-2 text-sm font-medium hover:text-gray-600 transition-colors"
             >
               Shop
-            </a>
-            <a
+            </Link>
+            <Link
               href="/about"
               className="block py-2 text-sm font-medium hover:text-gray-600 transition-colors"
             >
               About
-            </a>
+            </Link>
           </div>
         </div>
       )}

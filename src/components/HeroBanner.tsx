@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export default function HeroBanner() {
   return (
     <section className="relative h-[70vh] flex items-center justify-center bg-gradient-to-r from-gray-50 to-white">

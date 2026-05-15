@@ -5,7 +5,6 @@ import { useCart } from "@/context/CartContext";
 import MobileNavbar from "@/components/MobileNavbar";
 import Footer from "@/components/Footer";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 interface FormData {
   fullName: string;
@@ -19,7 +18,6 @@ interface FormData {
 
 export default function CheckoutPage() {
   const { items, getTotal, clearCart } = useCart();
-  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     email: "",
