@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import MobileNavbar from "@/components/MobileNavbar";
 import Footer from "@/components/Footer";
@@ -29,6 +29,25 @@ export default function CheckoutPage() {
   });
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [confirmedTotal, setConfirmedTotal] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [storeSettings, setStoreSettings] = useState({ shippingCharge: 0, taxRate: 10 });
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const response = await fetch('/api/settings');
+        const data = await response.json();
+        setStoreSettings(data);
+      } catch (error) {
+        console.error('Failed to fetch settings:', error);
+      }
+    }
+    fetchSettings();
+  }, []);
+
+  const totalTax = getTotal() * (storeSettings.taxRate / 100);
+  const finalTotal = getTotal() + totalTax + storeSettings.shippingCharge;
 
   if (items.length === 0 && !orderPlaced) {
     return (
@@ -59,10 +78,9 @@ export default function CheckoutPage() {
     }));
   };
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
+  const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate form
     if (
       !formData.fullName ||
       !formData.email ||
@@ -76,11 +94,37 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Generate order ID
-    const newOrderId = `KIWI-${Date.now()}`;
-    setOrderId(newOrderId);
-    setOrderPlaced(true);
-    clearCart();
+    setIsSubmitting(true);
+    try {
+      const newOrderId = `KIWI-${Date.now()}`;
+      
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: newOrderId,
+          customerDetails: formData,
+          items: items,
+          total: finalTotal,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to place order');
+      }
+
+      setOrderId(newOrderId);
+      setConfirmedTotal(finalTotal);
+      setOrderPlaced(true);
+      clearCart();
+    } catch (error) {
+      console.error('Error placing order:', error);
+      alert("There was an error placing your order. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (orderPlaced) {
@@ -108,28 +152,32 @@ export default function CheckoutPage() {
               <p className="text-2xl font-bold text-black mb-8">{orderId}</p>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 text-left">
-              <h2 className="font-bold text-lg mb-4 text-blue-900">Order Details</h2>
-              <div className="space-y-2 text-gray-700">
-                <p>
-                  <strong>Name:</strong> {formData.fullName}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 text-left shadow-sm">
+              <h2 className="font-bold text-lg mb-4 text-blue-900 border-b border-blue-100 pb-2">Order Summary</h2>
+              <div className="space-y-3 text-gray-700">
+                <p className="flex justify-between">
+                  <span className="font-medium">Name:</span> <span>{formData.fullName}</span>
                 </p>
-                <p>
-                  <strong>Email:</strong> {formData.email}
+                <p className="flex justify-between">
+                  <span className="font-medium">Email:</span> <span>{formData.email}</span>
                 </p>
-                <p>
-                  <strong>Phone:</strong> {formData.phone}
+                <p className="flex justify-between">
+                  <span className="font-medium">Phone:</span> <span>{formData.phone}</span>
                 </p>
-                <p>
-                  <strong>Delivery Address:</strong> {formData.address}, {formData.city},{" "}
-                  {formData.state} {formData.zipCode}
+                <p className="flex justify-between">
+                  <span className="font-medium">Delivery:</span> <span className="text-right">{formData.address}, {formData.city}, {formData.state}</span>
                 </p>
-                <p className="pt-4 border-t border-blue-200">
-                  <strong>Order Total:</strong> ${(getTotal() * 1.1).toFixed(2)}
-                </p>
-                <p>
-                  <strong>Payment Method:</strong>{" "}
-                  <span className="text-green-600 font-semibold">Cash on Delivery (COD)</span>
+                <div className="pt-4 border-t border-blue-200 mt-4">
+                  <p className="flex justify-between text-xl">
+                    <strong className="text-blue-900">Total Amount:</strong> 
+                    <strong className="text-blue-900 font-black text-2xl">Rs. {confirmedTotal.toFixed(2)}</strong>
+                  </p>
+                </div>
+                <p className="flex justify-between items-center mt-2">
+                  <span className="font-medium">Payment:</span> 
+                  <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    Cash on Delivery
+                  </span>
                 </p>
               </div>
             </div>
@@ -148,7 +196,7 @@ export default function CheckoutPage() {
               </p>
               <Link
                 href="/shop"
-                className="inline-block bg-black text-white px-8 py-4 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                className="inline-block bg-black text-white px-8 py-4 rounded-lg font-medium hover:bg-gray-800 transition-all transform active:scale-95 shadow-md"
               >
                 Continue Shopping
               </Link>
@@ -170,12 +218,12 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Order Form */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
                 <h2 className="text-2xl font-bold mb-6">Delivery Information</h2>
 
-                <form onSubmit={handlePlaceOrder} className="space-y-4">
+                <form onSubmit={handlePlaceOrder} className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Full Name
                     </label>
                     <input
@@ -183,14 +231,14 @@ export default function CheckoutPage() {
                       name="fullName"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all"
                       required
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Email
                       </label>
                       <input
@@ -198,12 +246,12 @@ export default function CheckoutPage() {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Phone Number
                       </label>
                       <input
@@ -211,29 +259,29 @@ export default function CheckoutPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all"
                         required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Delivery Address
                     </label>
                     <textarea
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
                       rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all"
                       required
                     ></textarea>
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         City
                       </label>
                       <input
@@ -241,25 +289,25 @@ export default function CheckoutPage() {
                         name="city"
                         value={formData.city}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        State
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Province / State
                       </label>
                       <input
                         type="text"
                         name="state"
                         value={formData.state}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all"
                         required
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Zip Code
                       </label>
                       <input
@@ -267,31 +315,25 @@ export default function CheckoutPage() {
                         name="zipCode"
                         value={formData.zipCode}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-black outline-none transition-all"
                         required
                       />
                     </div>
                   </div>
 
-                  {/* Payment Method - COD Only */}
-                  <div className="mt-8 pt-8 border-t border-gray-200">
+                  <div className="mt-8 pt-8 border-t border-gray-100">
                     <h3 className="text-xl font-bold mb-4">Payment Method</h3>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="bg-green-50 border border-green-200 rounded-2xl p-6">
                       <div className="flex items-center">
-                        <input
-                          type="radio"
-                          id="cod"
-                          name="payment"
-                          value="cod"
-                          defaultChecked
-                          className="w-4 h-4 text-black"
-                        />
-                        <label htmlFor="cod" className="ml-3 cursor-pointer flex-1">
-                          <span className="font-medium text-green-900">
+                        <div className="w-5 h-5 rounded-full border-2 border-green-600 flex items-center justify-center bg-green-600">
+                           <div className="w-2 h-2 bg-white rounded-full"></div>
+                        </div>
+                        <label className="ml-4 cursor-pointer flex-1">
+                          <span className="font-bold text-green-900 text-lg">
                             Cash on Delivery (COD)
                           </span>
-                          <p className="text-sm text-green-700">
-                            Pay when your order arrives. No online payment required.
+                          <p className="text-sm text-green-700 mt-1">
+                            Pay securely with cash when your order arrives at your doorstep.
                           </p>
                         </label>
                       </div>
@@ -300,9 +342,10 @@ export default function CheckoutPage() {
 
                   <button
                     type="submit"
-                    className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors mt-8"
+                    disabled={isSubmitting}
+                    className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all transform active:scale-[0.98] mt-8 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-xl"
                   >
-                    Place Order with COD
+                    {isSubmitting ? "Processing..." : "Place Order (COD)"}
                   </button>
                 </form>
               </div>
@@ -310,16 +353,19 @@ export default function CheckoutPage() {
 
             {/* Order Summary */}
             <div>
-              <div className="bg-gray-50 p-6 rounded-lg sticky top-20">
+              <div className="bg-gray-50 p-8 rounded-2xl sticky top-20 border border-gray-100 shadow-sm">
                 <h2 className="text-2xl font-bold mb-6">Order Summary</h2>
 
-                <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">
+                <div className="space-y-4 mb-6 pb-6 border-b border-gray-200">
                   {items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span className="text-gray-600">
-                        {item.name} x {item.quantity}
-                      </span>
-                      <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                    <div key={`${item.id}-${item.color}-${item.size}`} className="flex justify-between text-sm">
+                      <div className="flex-1 pr-4">
+                         <span className="font-medium text-gray-800">{item.name}</span>
+                         <div className="text-[10px] text-gray-500 uppercase font-bold mt-0.5">
+                            {item.color} / {item.size} x {item.quantity}
+                         </div>
+                      </div>
+                      <span className="font-bold text-gray-900 whitespace-nowrap">Rs. {(item.price * item.quantity).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -327,28 +373,29 @@ export default function CheckoutPage() {
                 <div className="space-y-3 mb-6 pb-6 border-b border-gray-200">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">${getTotal().toFixed(2)}</span>
+                    <span className="font-bold">Rs. {getTotal().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
-                    <span className="font-medium text-green-600">Free</span>
+                    <span className={`font-bold ${storeSettings.shippingCharge === 0 ? 'text-green-600' : 'text-gray-900'}`}>
+                      {storeSettings.shippingCharge === 0 ? 'Free' : `Rs. ${storeSettings.shippingCharge.toFixed(2)}`}
+                    </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Tax (10%)</span>
-                    <span className="font-medium">${(getTotal() * 0.1).toFixed(2)}</span>
+                    <span className="text-gray-600">Tax ({storeSettings.taxRate}%)</span>
+                    <span className="font-bold text-gray-900">Rs. {totalTax.toFixed(2)}</span>
                   </div>
                 </div>
 
-                <div className="flex justify-between mb-6 text-lg font-bold">
-                  <span>Total</span>
-                  <span>${(getTotal() * 1.1).toFixed(2)}</span>
+                <div className="flex justify-between mb-8">
+                  <span className="text-xl font-bold">Total</span>
+                  <span className="text-2xl font-black text-indigo-600 uppercase">Rs. {finalTotal.toFixed(2)}</span>
                 </div>
 
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm text-blue-900">
-                    <strong>Payment on Delivery</strong>
-                    <br />
-                    Pay directly to the delivery person when your order arrives.
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <p className="text-[11px] text-blue-800 leading-relaxed">
+                    <strong>Payment on Delivery:</strong> Please ensure you have the exact amount ready upon arrival.
                   </p>
                 </div>
               </div>
@@ -360,3 +407,4 @@ export default function CheckoutPage() {
     </>
   );
 }
+

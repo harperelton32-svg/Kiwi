@@ -1,63 +1,288 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
+
+interface ColorOption {
+  name: string;
+  class: string;
+}
 
 interface Product {
   id: string;
   name: string;
   price: number;
+  offerPrice?: number;
+  isOfferActive?: boolean;
   image: string;
+  gallery?: string[];
+  colors?: ColorOption[];
 }
 
 export default function ProductCard({ product }: { product: Product }) {
-  const { addToCart } = useCart();
-  const [isAdded, setIsAdded] = useState(false);
+  const { items, addToCart, removeFromCart } = useCart();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-      quantity: 1,
-    });
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 2000);
+  const displayPrice = product.isOfferActive && product.offerPrice ? product.offerPrice : product.price;
+
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+  const colors = (product.colors && product.colors.length > 0)
+    ? product.colors
+    : [
+        { name: 'Midnight Black', class: 'bg-black' },
+        { name: 'Cotton White', class: 'bg-white border border-gray-200' },
+        { name: 'Royal Indigo', class: 'bg-indigo-600' }
+      ];
+  const sizes = ['S', 'M', 'L', 'XL'];
+
+  // Use real gallery if available, otherwise fallback to placeholders
+  const productImages = (product.gallery && product.gallery.filter(img => img && img.trim() !== '').length > 0) 
+    ? product.gallery.filter(img => img && img.trim() !== '') 
+    : [
+        product.image || 'https://placehold.co/400x400/png?text=No+Image',
+        `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+2`,
+        `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+3`,
+        `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+4`,
+        `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+5`,
+      ];
+
+  const inCart = items.some((i) => 
+    i.id === product.id && i.color === selectedColor && i.size === selectedSize
+  );
+
+  const selectionComplete = selectedColor && selectedSize;
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isModalOpen && productImages.length > 0) {
+      interval = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % productImages.length);
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isModalOpen, productImages.length]);
+
+  const nextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (productImages.length === 0) return;
+    setCurrentImageIndex((prev) => (prev + 1) % productImages.length);
+  };
+
+  const prevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (productImages.length === 0) return;
+    setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
+  };
+
+  const handleToggleCart = () => {
+    if (!selectionComplete) return;
+
+    if (inCart) {
+      removeFromCart(product.id, selectedColor!, selectedSize!);
+    } else {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: displayPrice,
+        image: product.image || productImages[0],
+        quantity: 1,
+        color: selectedColor!,
+        size: selectedSize!
+      });
+    }
   };
 
   return (
-    <div className="group">
-      <div className="aspect-square bg-gray-100 mb-4 overflow-hidden rounded-lg relative">
-        <Image
-          src={product.image}
-          alt={product.name}
-          width={400}
-          height={400}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          loading="lazy"
-        />
-        <button
-          onClick={handleAddToCart}
-          className={`absolute inset-0 flex items-end justify-center pb-4 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 ${
-            isAdded ? "bg-opacity-40" : ""
-          }`}
-        >
-          <span
-            className={`px-6 py-2 rounded-lg font-medium transition-all duration-300 ${
-              isAdded
-                ? "bg-green-500 text-white"
-                : "bg-white text-black opacity-0 group-hover:opacity-100"
-            }`}
-          >
-            {isAdded ? "Added ✓" : "Add to Cart"}
-          </span>
-        </button>
+    <>
+      {/* Main Card */}
+      <div 
+        className="group cursor-pointer"
+        onClick={() => setIsModalOpen(true)}
+      >
+        <div className="aspect-square bg-gray-100 mb-4 overflow-hidden rounded-lg relative">
+          {product.isOfferActive && (
+            <div className="absolute top-3 left-3 bg-red-600 text-white text-[10px] font-black px-2.5 py-1.5 rounded-full uppercase tracking-tighter shadow-xl z-10 animate-pulse">
+              Special Price
+            </div>
+          )}
+          <Image
+            src={product.image || 'https://placehold.co/400x400/png?text=No+Image'}
+            alt={product.name}
+            width={400}
+            height={400}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300">
+             <span className="bg-white/90 text-black px-4 py-2 rounded-full font-medium opacity-0 group-hover:opacity-100 transition-opacity transform translate-y-4 group-hover:translate-y-0 duration-300 shadow-sm">
+               Quick View
+             </span>
+          </div>
+        </div>
+        <h3 className="font-medium text-sm mb-1 group-hover:text-indigo-600 transition-colors">{product.name}</h3>
+        <div className="flex items-center gap-2">
+          <p className={`font-bold ${product.isOfferActive ? 'text-red-600' : 'text-gray-900'}`}>Rs. {displayPrice}</p>
+          {product.isOfferActive && (
+            <p className="text-gray-400 line-through text-xs italic">Rs. {product.price}</p>
+          )}
+        </div>
       </div>
-      <h3 className="font-medium text-sm mb-1">{product.name}</h3>
-      <p className="text-gray-600">${product.price}</p>
-    </div>
+
+      {/* Product Modal */}
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity"
+          onClick={() => setIsModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Image Section with Slider */}
+            <div className="w-full md:w-1/2 bg-gray-100 relative h-80 md:h-auto overflow-hidden group/slider">
+              {productImages.length > 0 && (
+                <Image
+                  src={productImages[currentImageIndex] || 'https://placehold.co/400x400/png?text=No+Image'}
+                  alt={product.name}
+                  fill
+                  className="object-cover transition-opacity duration-500"
+                  key={currentImageIndex}
+                />
+              )}
+              
+              <button 
+                onClick={prevImage}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg opacity-0 group-hover/slider:opacity-100 transition-opacity"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+              </button>
+              <button 
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white/80 hover:bg-white rounded-full shadow-lg opacity-0 group-hover/slider:opacity-100 transition-opacity"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+              </button>
+
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                {productImages.map((_, i) => (
+                  <div 
+                    key={i} 
+                    className={`h-1.5 rounded-full transition-all ${i === currentImageIndex ? "w-6 bg-indigo-600" : "w-1.5 bg-gray-300"}`}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            {/* Details Section */}
+            <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col relative overflow-y-auto">
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+
+              <div className="flex-1">
+                <span className="text-xs uppercase tracking-widest text-indigo-600 font-bold mb-2 block">Premium Collection</span>
+                <div className="flex items-center gap-4 mb-2">
+                  <h2 className="text-3xl font-bold text-gray-900">{product.name}</h2>
+                  {product.isOfferActive && (
+                    <span className="bg-red-100 text-red-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
+                      Limited Time Offer
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-baseline gap-3 mb-6">
+                  <p className="text-4xl font-black text-indigo-600 tracking-tight">Rs. {displayPrice.toFixed(2)}</p>
+                  {product.isOfferActive && (
+                    <p className="text-xl text-gray-400 line-through font-light decoration-red-400/50">Rs. {product.price.toFixed(2)}</p>
+                  )}
+                </div>
+                
+                {/* Color Selection */}
+                <div className="mb-8">
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center justify-between">
+                    Select Color
+                    {selectedColor && <span className="text-indigo-600 normal-case font-medium">{selectedColor}</span>}
+                  </h3>
+                  <div className="flex gap-4">
+                    {colors.map((color) => (
+                      <button
+                        key={color.name}
+                        onClick={() => setSelectedColor(color.name)}
+                        className={`w-10 h-10 rounded-full transition-all transform hover:scale-110 ${color.class} ${
+                          selectedColor === color.name ? 'ring-4 ring-indigo-200 ring-offset-2' : ''
+                        }`}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Size Selection */}
+                <div className="mb-8">
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center justify-between">
+                    Select Size
+                    {selectedSize && <span className="text-indigo-600 normal-case font-medium">Size {selectedSize}</span>}
+                  </h3>
+                  <div className="flex gap-3">
+                    {sizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className={`w-12 h-12 rounded-xl font-bold transition-all ${
+                          selectedSize === size
+                            ? 'bg-indigo-600 text-white shadow-lg'
+                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="prose text-sm text-gray-500 mb-8 border-t border-gray-100 pt-6">
+                  <p>Experience the perfect blend of style and comfort with this premium piece. Crafted from high-quality materials, it's designed to elevate your everyday wardrobe.</p>
+                </div>
+              </div>
+
+              <div className="mt-auto space-y-3">
+                <button
+                  onClick={handleToggleCart}
+                  disabled={!selectionComplete}
+                  className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform shadow-md ${
+                    !selectionComplete
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : inCart 
+                        ? "bg-red-50 text-red-600 border-2 border-red-200 hover:bg-red-100 hover:scale-[1.02]" 
+                        : "bg-black text-white hover:bg-gray-900 hover:scale-[1.02] active:scale-95"
+                  }`}
+                >
+                  {!selectionComplete ? "Select Color & Size" : inCart ? "Remove from Cart" : "Add to Cart"}
+                </button>
+
+                {inCart && (
+                  <Link 
+                    href="/cart"
+                    className="w-full py-4 rounded-xl font-bold text-lg text-center block bg-gray-100 text-gray-900 hover:bg-gray-200 transition-all transform hover:scale-[1.02] active:scale-95 shadow-sm"
+                  >
+                    View Cart
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

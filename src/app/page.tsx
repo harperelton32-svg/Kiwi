@@ -1,26 +1,41 @@
+"use client";
+import { useEffect, useState } from "react";
 import MobileNavbar from "@/components/MobileNavbar";
 import HeroBanner from "@/components/HeroBanner";
 import CategorySection from "@/components/CategorySection";
 import Footer from "@/components/Footer";
 import { Product } from "@/components/ProductCard";
 
-const featuredProducts: Product[] = [
-  { id: '1', name: 'Premium Cotton T-Shirt', price: 39.99, image: 'https://via.placeholder.com/400x400?text=T-Shirt' },
-  { id: '2', name: 'Slim Fit Jeans', price: 89.99, image: 'https://via.placeholder.com/400x400?text=Jeans' },
-  { id: '3', name: 'Casual Hoodie', price: 59.99, image: 'https://via.placeholder.com/400x400?text=Hoodie' },
-  { id: '4', name: 'Designer Sneakers', price: 129.99, image: 'https://via.placeholder.com/400x400?text=Sneakers' },
-  { id: '5', name: 'Leather Jacket', price: 199.99, image: 'https://via.placeholder.com/400x400?text=Jacket' },
-  { id: '6', name: 'Summer Dress', price: 79.99, image: 'https://via.placeholder.com/400x400?text=Dress' },
-  { id: '7', name: 'Wool Sweater', price: 99.99, image: 'https://via.placeholder.com/400x400?text=Sweater' },
-  { id: '8', name: 'Athletic Shorts', price: 34.99, image: 'https://via.placeholder.com/400x400?text=Shorts' },
-];
-
 export default function Home() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        setProducts(data.slice(0, 8)); // Just show first 8 as featured
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
+
   return (
     <>
       <MobileNavbar />
       <HeroBanner />
-      <CategorySection title="Featured Products" products={featuredProducts} />
+      {loading ? (
+        <div className="py-12 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+        </div>
+      ) : (
+        <CategorySection title="Featured Products" products={products} />
+      )}
       <Footer />
     </>
   );
