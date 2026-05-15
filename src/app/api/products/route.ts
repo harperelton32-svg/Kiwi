@@ -1,42 +1,17 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getKVData, setKVData } from '@/lib/kv';
 
 export const dynamic = 'force-dynamic';
 
-const dataFilePath = path.join(process.cwd(), 'data', 'products.json');
-
-function getProducts() {
-  try {
-    if (!fs.existsSync(dataFilePath)) {
-      const dir = path.dirname(dataFilePath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      fs.writeFileSync(dataFilePath, JSON.stringify([]));
-      return [];
-    }
-    const fileContents = fs.readFileSync(dataFilePath, 'utf8');
-    return JSON.parse(fileContents);
-  } catch (error) {
-    console.error('Error reading products:', error);
-    return [];
-  }
-}
-
-function saveProducts(products: any[]) {
-  fs.writeFileSync(dataFilePath, JSON.stringify(products, null, 2));
-}
-
 export async function GET() {
-  const products = getProducts();
+  const products = await getKVData('products') || [];
   return NextResponse.json(products);
 }
 
 export async function POST(request: Request) {
   try {
     const product = await request.json();
-    const products = getProducts();
+    const products = await getKVData('products') || [];
     
     const newProduct = {
       ...product,
@@ -44,7 +19,7 @@ export async function POST(request: Request) {
     };
     
     products.push(newProduct);
-    saveProducts(products);
+    await setKVData('products', products);
     
     return NextResponse.json(newProduct, { status: 201 });
   } catch (error) {
@@ -55,7 +30,7 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const updatedProduct = await request.json();
-    const products = getProducts();
+    const products = await getKVData('products') || [];
     
     const index = products.findIndex((p: any) => p.id === updatedProduct.id);
     if (index === -1) {
@@ -63,7 +38,7 @@ export async function PATCH(request: Request) {
     }
     
     products[index] = { ...products[index], ...updatedProduct };
-    saveProducts(products);
+    await setKVData('products', products);
     
     return NextResponse.json(products[index]);
   } catch (error) {
@@ -74,10 +49,10 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
-    const products = getProducts();
+    const products = await getKVData('products') || [];
     
     const filteredProducts = products.filter((p: any) => p.id !== id);
-    saveProducts(filteredProducts);
+    await setKVData('products', filteredProducts);
     
     return NextResponse.json({ success: true });
   } catch (error) {

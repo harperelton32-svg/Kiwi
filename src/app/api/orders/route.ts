@@ -1,39 +1,11 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { getKVData, setKVData } from '@/lib/kv';
 
 export const dynamic = 'force-dynamic';
 
-const dataFilePath = path.join(process.cwd(), 'data', 'orders.json');
-
-// Helper to ensure the file exists and return its contents
-function getOrders() {
-  try {
-    if (!fs.existsSync(dataFilePath)) {
-      // Ensure directory exists
-      const dir = path.dirname(dataFilePath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      fs.writeFileSync(dataFilePath, JSON.stringify([]));
-      return [];
-    }
-    const fileContents = fs.readFileSync(dataFilePath, 'utf8');
-    try {
-      return JSON.parse(fileContents);
-    } catch (parseError) {
-      console.error('JSON Parse Error:', parseError);
-      return [];
-    }
-  } catch (error) {
-    console.error('Error reading orders:', error);
-    return [];
-  }
-}
-
 export async function GET(request: Request) {
   try {
-    const orders = getOrders();
+    const orders = await getKVData('orders') || [];
     return NextResponse.json(orders);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch orders' }, { status: 500 });
@@ -43,11 +15,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const orderData = await request.json();
+    const orders = await getKVData('orders') || [];
 
-    // Read existing orders
-    const orders = getOrders();
-
-    // Add new order
     const newOrder = {
       ...orderData,
       status: 'Pending',
@@ -55,9 +24,7 @@ export async function POST(request: Request) {
     };
 
     orders.push(newOrder);
-
-    // Write back to file
-    fs.writeFileSync(dataFilePath, JSON.stringify(orders, null, 2));
+    await setKVData('orders', orders);
 
     return NextResponse.json({ success: true, order: newOrder }, { status: 201 });
   } catch (error) {
@@ -73,7 +40,7 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Missing id or status' }, { status: 400 });
     }
 
-    const orders = getOrders();
+    const orders = await getKVData('orders') || [];
     const orderIndex = orders.findIndex((o: any) => o.id === id);
 
     if (orderIndex === -1) {
@@ -81,7 +48,7 @@ export async function PATCH(request: Request) {
     }
 
     orders[orderIndex].status = status;
-    fs.writeFileSync(dataFilePath, JSON.stringify(orders, null, 2));
+    await setKVData('orders', orders);
 
     return NextResponse.json({ success: true, order: orders[orderIndex] });
   } catch (error) {
@@ -97,14 +64,14 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }
 
-    const orders = getOrders();
+    const orders = await getKVData('orders') || [];
     const filteredOrders = orders.filter((o: any) => o.id !== id);
 
     if (orders.length === filteredOrders.length) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
     }
 
-    fs.writeFileSync(dataFilePath, JSON.stringify(filteredOrders, null, 2));
+    await setKVData('orders', filteredOrders);
 
     return NextResponse.json({ success: true });
   } catch (error) {

@@ -17,6 +17,12 @@
   "images": {
     "binding": "IMAGES"
   },
+  "kv_namespaces": [
+    {
+      "binding": "DATA",
+      "id": "placeholder-id-will-be-synced-later"
+    }
+  ],
   "observability": {
     "enabled": true
   }
