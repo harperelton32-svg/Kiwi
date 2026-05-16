@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "NODE_OPTIONS='--no-deprecation' next dev",
-    "build": "next build",
+    "build": "opennextjs-cloudflare build",
     "build:cf": "opennextjs-cloudflare build",
     "start": "NODE_OPTIONS='--no-deprecation' next start",
     "lint": "eslint",

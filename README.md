@@ -13,28 +13,20 @@ KIWI is a premium mobile-first fashion ecommerce website built with Next.js for 
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Styling**: Tailwind CSS
 - **Typography**: Google Fonts (Outfit)
 - **Animations**: Framer Motion (minimal usage)
 - **Language**: TypeScript
+- **Deployment**: Cloudflare Pages with OpenNext
 
 ## Pages
 
 - Home: Hero banner and featured products
 - Shop: All products grid
-- Product: Individual product page (placeholder)
+- Product: Individual product page
 - About: Company information
 - Contact: Contact form and details
-
-## Components
-
-- MobileNavbar: Sticky navigation with mobile menu
-- HeroBanner: Full-width hero section
-- ProductGrid: Responsive product grid
-- ProductCard: Individual product display
-- CategorySection: Product category sections
-- Footer: Site footer with links
 
 ## Getting Started
 
@@ -52,6 +44,33 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Deployment on Cloudflare
+
+This project is optimized for Cloudflare Pages using `@opennextjs/cloudflare`.
+
+### Build & Deploy
+
+To build and deploy manually:
+
+```bash
+npm run deploy
+```
+
+### Automated Deployment (CI/CD)
+
+When connecting to Cloudflare Pages, use the following settings:
+- **Build command**: `npm run build`
+- **Build output directory**: `.open-next/assets` (or as configured in wrangler.jsonc)
+- **Environment Variable**: `NODE_VERSION` should be `20` or higher.
+
+### Local Preview
+
+To preview the production build locally:
+
+```bash
+npm run preview
+```
+
 ## Performance Optimizations
 
 - Mobile-first responsive design
@@ -59,17 +78,3 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - Minimal JavaScript bundle
 - Server components where possible
 - Optimized fonts and CSS
-
-## Build
-
-To build for production:
-
-```bash
-npm run build
-```
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
