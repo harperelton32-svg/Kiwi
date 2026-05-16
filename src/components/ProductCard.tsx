@@ -42,15 +42,12 @@ export default function ProductCard({ product }: { product: Product }) {
       ];
   const sizes = ['S', 'M', 'L', 'XL'];
 
-  // Use real gallery if available, otherwise fallback to placeholders
-  const productImages = (product.gallery && product.gallery.filter(img => img && img.trim() !== '').length > 0) 
-    ? product.gallery.filter(img => img && img.trim() !== '') 
-    : [
-        product.image || 'https://placehold.co/400x400/png?text=No+Image',
-        `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+2`,
-        `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+3`,
-        `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+4`,
-      ];
+  // Always show primary image first, then valid gallery images
+  const validGallery = product.gallery ? product.gallery.filter(img => img && img.trim() !== '') : [];
+  const productImages = [
+    product.image || 'https://placehold.co/400x400/png?text=No+Image',
+    ...validGallery
+  ];
 
   const inCart = items.some((i) => 
     i.id === product.id && i.color === selectedColor && i.size === selectedSize
@@ -128,11 +125,9 @@ export default function ProductCard({ product }: { product: Product }) {
               Special Price
             </div>
           )}
-          <Image
+          <img
             src={product.image || 'https://placehold.co/400x400/png?text=No+Image'}
             alt={product.name}
-            width={400}
-            height={400}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             loading="lazy"
           />
@@ -144,10 +139,10 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
         <div className="text-center">
           <h3 className="font-medium text-sm mb-1 group-hover:text-indigo-600 transition-colors truncate px-2">{product.name}</h3>
-          <div className="flex items-center justify-center gap-2">
-            <p className={`font-bold ${product.isOfferActive ? 'text-red-600' : 'text-gray-900'}`}>Rs. {displayPrice}</p>
+          <div className="flex flex-wrap items-baseline justify-center gap-1 sm:gap-2 px-1">
+            <p className={`font-bold text-sm sm:text-base ${product.isOfferActive ? 'text-red-600' : 'text-gray-900'}`}>Rs. {displayPrice}</p>
             {product.isOfferActive && (
-              <p className="text-gray-400 line-through text-xs italic">Rs. {product.price}</p>
+              <p className="text-gray-400 line-through text-[10px] sm:text-xs italic">Rs. {product.price}</p>
             )}
           </div>
         </div>
@@ -171,11 +166,10 @@ export default function ProductCard({ product }: { product: Product }) {
               onTouchEnd={onTouchEndEvent}
             >
               {productImages.length > 0 && (
-                <Image
+                <img
                   src={productImages[currentImageIndex] || 'https://placehold.co/400x400/png?text=No+Image'}
                   alt={product.name}
-                  fill
-                  className="object-cover transition-opacity duration-500"
+                  className="w-full h-full object-cover transition-opacity duration-500"
                   key={currentImageIndex}
                 />
               )}

@@ -94,15 +94,10 @@ export default function DesignsPage() {
     try {
       const finalImage = newProduct.image || `https://placehold.co/400x400/png?text=${encodeURIComponent(newProduct.name)}`;
       
-      // If gallery is empty, use placeholders
+      // If gallery is empty, use empty array instead of placeholders
       const finalGallery = newProduct.gallery.some(img => img !== '') 
         ? newProduct.gallery.filter(img => img !== '')
-        : [
-            finalImage,
-            `${finalImage}&text=${encodeURIComponent(newProduct.name)}+View+2`,
-            `${finalImage}&text=${encodeURIComponent(newProduct.name)}+View+3`,
-            `${finalImage}&text=${encodeURIComponent(newProduct.name)}+View+4`,
-          ];
+        : [];
 
       const response = await fetch('/api/products', {
         method: 'POST',
@@ -166,7 +161,40 @@ export default function DesignsPage() {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          } else {
+            resolve(reader.result as string);
+          }
+        };
+        img.onerror = (error) => reject(error);
+      };
       reader.onerror = error => reject(error);
     });
   };
@@ -314,7 +342,7 @@ export default function DesignsPage() {
                   <div className="flex items-center gap-4">
                     <div className="relative w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
                       {newProduct.image ? (
-                        <Image src={newProduct.image} alt="Preview" fill className="object-cover" />
+                        <img src={newProduct.image} alt="Preview" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300">
                           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -417,7 +445,7 @@ export default function DesignsPage() {
                       <div key={i} className="relative aspect-square rounded-lg bg-white border border-gray-200 overflow-hidden group/item">
                         {newProduct.gallery[i] ? (
                           <>
-                            <Image src={newProduct.gallery[i]} alt={`Gallery ${i}`} fill className="object-cover" />
+                            <img src={newProduct.gallery[i]} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
                             <button 
                               type="button"
                               onClick={() => handleGalleryChange(i, '', false)}
@@ -467,11 +495,10 @@ export default function DesignsPage() {
               products.map((product) => (
                 <div key={product.id} className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all border border-gray-100 overflow-hidden">
                   <div className="aspect-square relative overflow-hidden bg-gray-100 border-b border-gray-100">
-                    <Image
-                      src={product.image}
+                    <img
+                      src={product.image || 'https://placehold.co/400x400/png?text=No+Image'}
                       alt={product.name}
-                      fill
-                      className="object-cover transition-transform duration-500"
+                      className="w-full h-full object-cover transition-transform duration-500"
                     />
                   </div>
                   <div className="p-5 flex flex-col gap-4">
@@ -491,8 +518,8 @@ export default function DesignsPage() {
                           ))}
                         </div>
                         <div className="flex gap-1">
-                          {[...Array(4)].map((_, i) => (
-                            <div key={i} className={`w-1.5 h-1.5 rounded-full ${product.gallery && product.gallery[i] ? 'bg-indigo-400' : 'bg-gray-200'}`} />
+                          {[product.image, ...(product.gallery || [])].filter(Boolean).map((_, i) => (
+                            <div key={i} className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
                           ))}
                         </div>
                       </div>
@@ -501,9 +528,7 @@ export default function DesignsPage() {
                     <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
                       <button
                         onClick={() => {
-                          const gallery = product.gallery && product.gallery.length === 4 
-                            ? product.gallery 
-                            : [product.image, '', '', ''];
+                          const gallery = [...(product.gallery || []), '', '', '', ''].slice(0, 4);
                           setEditingProduct({ ...product, gallery, colors: product.colors || [] });
                         }}
                         className="flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2.5 rounded-xl font-bold transition-colors text-sm"
@@ -591,7 +616,7 @@ export default function DesignsPage() {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Image</label>
                   <div className="flex items-center gap-4">
                     <div className="relative w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
-                      <Image src={editingProduct.image} alt="Preview" fill className="object-cover" />
+                      <img src={editingProduct.image} alt="Preview" className="w-full h-full object-cover" />
                     </div>
                     <input
                       type="file"
@@ -656,7 +681,7 @@ export default function DesignsPage() {
                       <div key={i} className="relative aspect-square rounded-lg bg-white border border-gray-200 overflow-hidden group/edititem">
                         {editingProduct.gallery?.[i] ? (
                           <>
-                            <Image src={editingProduct.gallery[i]} alt={`Gallery ${i}`} fill className="object-cover" />
+                            <img src={editingProduct.gallery[i]} alt={`Gallery ${i}`} className="w-full h-full object-cover" />
                             <button 
                               type="button"
                               onClick={() => handleGalleryChange(i, '', true)}

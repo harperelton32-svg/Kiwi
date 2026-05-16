@@ -10,7 +10,7 @@ import Link from "next/link";
 export default function CartPage() {
   const { items, removeFromCart, updateQuantity, getTotal, updateItem } = useCart();
   const [editingItem, setEditingItem] = useState<CartItem | null>(null);
-  const [availableColors, setAvailableColors] = useState<{name: string, class: string}[]>([]);
+  const [availableColors, setAvailableColors] = useState<{name: string, hex: string}[]>([]);
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [storeSettings, setStoreSettings] = useState({ shippingCharge: 0, taxRate: 10 });
@@ -47,18 +47,18 @@ export default function CartPage() {
       } else {
         // Use default presets if product doesn't exist or has no specific colors
         setAvailableColors([
-          { name: 'Midnight Black', class: 'bg-black' },
-          { name: 'Cotton White', class: 'bg-white border border-gray-200' },
-          { name: 'Royal Indigo', class: 'bg-indigo-600' }
+          { name: 'Midnight Black', hex: '#000000' },
+          { name: 'Cotton White', hex: '#ffffff' },
+          { name: 'Royal Indigo', hex: '#4f46e5' }
         ]);
       }
     } catch (error) {
       console.error('Failed to fetch product options:', error);
       // Fallback on error
       setAvailableColors([
-        { name: 'Midnight Black', class: 'bg-black' },
-        { name: 'Cotton White', class: 'bg-white border border-gray-200' },
-        { name: 'Royal Indigo', class: 'bg-indigo-600' }
+        { name: 'Midnight Black', hex: '#000000' },
+        { name: 'Cotton White', hex: '#ffffff' },
+        { name: 'Royal Indigo', hex: '#4f46e5' }
       ]);
     }
   }
@@ -112,11 +112,9 @@ export default function CartPage() {
                       <div className="flex gap-4 flex-1">
                         {/* Small Image */}
                         <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
-                          <Image
-                            src={item.image}
+                          <img
+                            src={item.image || 'https://placehold.co/400x400/png?text=No+Image'}
                             alt={item.name}
-                            width={96}
-                            height={96}
                             className="w-full h-full object-cover"
                             loading="lazy"
                           />
@@ -258,7 +256,8 @@ export default function CartPage() {
                       <button
                         key={color.name}
                         onClick={() => setSelectedColor(color.name)}
-                        className={`w-10 h-10 rounded-full transition-all transform hover:scale-110 ${color.class} ${
+                        style={{ backgroundColor: color.hex }}
+                        className={`w-10 h-10 rounded-full transition-all transform hover:scale-110 border border-gray-200 ${
                           selectedColor === color.name ? 'ring-4 ring-indigo-200 ring-offset-2' : ''
                         }`}
                         title={color.name}
