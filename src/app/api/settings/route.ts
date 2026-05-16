@@ -13,7 +13,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const newSettings = await request.json();
+    const newSettings = await request.json() as Record<string, any>;
     await setKVData('settings', newSettings);
     return NextResponse.json(newSettings);
   } catch (error) {

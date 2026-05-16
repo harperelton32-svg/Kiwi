@@ -10,8 +10,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const product = await request.json();
-    const products = await getKVData('products') || [];
+    const product = await request.json() as Record<string, any>;
+    const products = (await getKVData('products') || []) as any[];
     
     const newProduct = {
       ...product,
@@ -29,8 +29,8 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const updatedProduct = await request.json();
-    const products = await getKVData('products') || [];
+    const updatedProduct = await request.json() as Record<string, any>;
+    const products = (await getKVData('products') || []) as any[];
     
     const index = products.findIndex((p: any) => p.id === updatedProduct.id);
     if (index === -1) {
@@ -48,8 +48,8 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json();
-    const products = await getKVData('products') || [];
+    const { id } = await request.json() as { id: string };
+    const products = (await getKVData('products') || []) as any[];
     
     const filteredProducts = products.filter((p: any) => p.id !== id);
     await setKVData('products', filteredProducts);

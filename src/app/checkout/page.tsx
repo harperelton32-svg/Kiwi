@@ -37,7 +37,7 @@ export default function CheckoutPage() {
     async function fetchSettings() {
       try {
         const response = await fetch('/api/settings');
-        const data = await response.json();
+        const data = await response.json() as { shippingCharge: number; taxRate: number };
         setStoreSettings(data);
       } catch (error) {
         console.error('Failed to fetch settings:', error);
@@ -407,4 +407,3 @@ export default function CheckoutPage() {
     </>
   );
 }
-

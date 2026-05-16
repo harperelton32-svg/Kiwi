@@ -3,7 +3,7 @@ import { getKVData, setKVData } from '@/lib/kv';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const orders = await getKVData('orders') || [];
     return NextResponse.json(orders);
@@ -14,8 +14,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const orderData = await request.json();
-    const orders = await getKVData('orders') || [];
+    const orderData = await request.json() as Record<string, any>;
+    const orders = (await getKVData('orders') || []) as any[];
 
     const newOrder = {
       ...orderData,
@@ -35,12 +35,12 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { id, status } = await request.json();
+    const { id, status } = await request.json() as { id: string, status: string };
     if (!id || !status) {
       return NextResponse.json({ error: 'Missing id or status' }, { status: 400 });
     }
 
-    const orders = await getKVData('orders') || [];
+    const orders = (await getKVData('orders') || []) as any[];
     const orderIndex = orders.findIndex((o: any) => o.id === id);
 
     if (orderIndex === -1) {
@@ -59,12 +59,12 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json();
+    const { id } = await request.json() as { id: string };
     if (!id) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }
 
-    const orders = await getKVData('orders') || [];
+    const orders = (await getKVData('orders') || []) as any[];
     const filteredOrders = orders.filter((o: any) => o.id !== id);
 
     if (orders.length === filteredOrders.length) {

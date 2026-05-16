@@ -97,7 +97,7 @@ export default function AdminOrdersPage() {
         if (!response.ok) {
           throw new Error('Failed to fetch orders');
         }
-        const data = await response.json();
+        const data = await response.json() as Order[];
         // Sort by newest first
         const sortedData = data.sort((a: Order, b: Order) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
