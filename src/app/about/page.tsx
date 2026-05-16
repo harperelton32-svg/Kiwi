@@ -16,15 +16,15 @@ export default function About() {
             <p className="mb-6">
               Our mobile-first approach ensures that every aspect of our brand is optimized for the digital age, providing a seamless shopping experience across all devices.
             </p>
-            <div className="mt-16 pt-8 border-t border-gray-100 text-center">
+            <div className="mt-16 pt-12 border-t border-gray-100 flex justify-center">
               <Link 
                 href="/admin/designs"
-                className="inline-flex items-center gap-2 text-gray-400 hover:text-indigo-600 transition-colors text-sm font-medium"
+                className="bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-gray-800 transition-all shadow-lg hover:shadow-xl active:scale-95 transform flex items-center gap-2"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                 </svg>
-                Admin Access
+                Access Admin Panel
               </Link>
             </div>
           </div>
