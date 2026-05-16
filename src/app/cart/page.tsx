@@ -107,57 +107,59 @@ export default function CartPage() {
                   return (
                     <div
                       key={itemKey}
-                      className="flex gap-4 border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors bg-white shadow-sm"
+                      className="flex flex-col sm:flex-row gap-4 border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors bg-white shadow-sm"
                     >
-                      {/* Small Image */}
-                      <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          width={96}
-                          height={96}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-
-                      {/* Item Details */}
-                      <div className="flex-1">
-                        <h3 className="font-medium text-lg mb-1">{item.name}</h3>
-                        <div className="flex gap-2 mb-3">
-                          {item.color && (
-                            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
-                              {item.color}
-                            </span>
-                          )}
-                          {item.size && (
-                            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded">
-                              Size {item.size}
-                            </span>
-                          )}
+                      <div className="flex gap-4 flex-1">
+                        {/* Small Image */}
+                        <div className="w-24 h-24 flex-shrink-0 bg-gray-100 rounded-md overflow-hidden">
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            width={96}
+                            height={96}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
                         </div>
-                        <p className="text-gray-600 mb-3 font-semibold">Rs. {item.price.toFixed(2)}</p>
 
-                        {/* Quantity Controls */}
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.color, item.size)}
-                            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                          >
-                            −
-                          </button>
-                          <span className="w-8 text-center font-bold">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.color, item.size)}
-                            className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
-                          >
-                            +
-                          </button>
+                        {/* Item Details */}
+                        <div className="flex-1">
+                          <h3 className="font-medium text-lg mb-1">{item.name}</h3>
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {item.color && (
+                              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+                                {item.color}
+                              </span>
+                            )}
+                            {item.size && (
+                              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded">
+                                Size {item.size}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-gray-600 mb-3 font-semibold">Rs. {item.price.toFixed(2)}</p>
+
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity - 1, item.color, item.size)}
+                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+                            >
+                              −
+                            </button>
+                            <span className="w-8 text-center font-bold">{item.quantity}</span>
+                            <button
+                              onClick={() => updateQuantity(item.id, item.quantity + 1, item.color, item.size)}
+                              className="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-full hover:bg-gray-50 transition-colors"
+                            >
+                              +
+                            </button>
+                          </div>
                         </div>
                       </div>
 
                       {/* Price & Remove */}
-                      <div className="text-right flex flex-col justify-between items-end">
+                      <div className="flex flex-row sm:flex-col justify-between items-center sm:items-end pt-4 sm:pt-0 border-t sm:border-t-0 border-gray-100">
                         <p className="font-bold text-xl text-indigo-600">
                           Rs. {(item.price * item.quantity).toFixed(2)}
                         </p>

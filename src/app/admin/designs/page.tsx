@@ -34,7 +34,7 @@ export default function DesignsPage() {
     offerPrice: '',
     isOfferActive: false,
     image: '', 
-    gallery: ['', '', '', '', ''],
+    gallery: ['', '', '', ''],
     colors: [] as ColorOption[]
   });
   const [isAdding, setIsAdding] = useState(false);
@@ -102,7 +102,6 @@ export default function DesignsPage() {
             `${finalImage}&text=${encodeURIComponent(newProduct.name)}+View+2`,
             `${finalImage}&text=${encodeURIComponent(newProduct.name)}+View+3`,
             `${finalImage}&text=${encodeURIComponent(newProduct.name)}+View+4`,
-            `${finalImage}&text=${encodeURIComponent(newProduct.name)}+View+5`,
           ];
 
       const response = await fetch('/api/products', {
@@ -119,7 +118,7 @@ export default function DesignsPage() {
         }),
       });
       if (response.ok) {
-        setNewProduct({ name: '', price: '', offerPrice: '', isOfferActive: false, image: '', gallery: ['', '', '', '', ''], colors: [] });
+        setNewProduct({ name: '', price: '', offerPrice: '', isOfferActive: false, image: '', gallery: ['', '', '', ''], colors: [] });
         fetchProducts();
       }
     } catch (error) {
@@ -195,7 +194,7 @@ export default function DesignsPage() {
 
   const handleGalleryChange = (index: number, value: string, isEditing: boolean) => {
     if (isEditing && editingProduct) {
-      const newGallery = [...(editingProduct.gallery || ['', '', '', '', ''])];
+      const newGallery = [...(editingProduct.gallery || ['', '', '', ''])];
       newGallery[index] = value;
       setEditingProduct({ ...editingProduct, gallery: newGallery });
     } else {
@@ -413,8 +412,8 @@ export default function DesignsPage() {
 
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
                   <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Gallery Images</h3>
-                  <div className="grid grid-cols-5 gap-2">
-                    {[0, 1, 2, 3, 4].map((i) => (
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0, 1, 2, 3].map((i) => (
                       <div key={i} className="relative aspect-square rounded-lg bg-white border border-gray-200 overflow-hidden group/item">
                         {newProduct.gallery[i] ? (
                           <>
@@ -492,7 +491,7 @@ export default function DesignsPage() {
                           ))}
                         </div>
                         <div className="flex gap-1">
-                          {[...Array(5)].map((_, i) => (
+                          {[...Array(4)].map((_, i) => (
                             <div key={i} className={`w-1.5 h-1.5 rounded-full ${product.gallery && product.gallery[i] ? 'bg-indigo-400' : 'bg-gray-200'}`} />
                           ))}
                         </div>
@@ -502,9 +501,9 @@ export default function DesignsPage() {
                     <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
                       <button
                         onClick={() => {
-                          const gallery = product.gallery && product.gallery.length === 5 
+                          const gallery = product.gallery && product.gallery.length === 4 
                             ? product.gallery 
-                            : [product.image, '', '', '', ''];
+                            : [product.image, '', '', ''];
                           setEditingProduct({ ...product, gallery, colors: product.colors || [] });
                         }}
                         className="flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2.5 rounded-xl font-bold transition-colors text-sm"
@@ -652,8 +651,8 @@ export default function DesignsPage() {
 
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
                   <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider text-center">Gallery Slider Images</h3>
-                  <div className="grid grid-cols-5 gap-2">
-                    {[0, 1, 2, 3, 4].map((i) => (
+                  <div className="grid grid-cols-4 gap-2">
+                    {[0, 1, 2, 3].map((i) => (
                       <div key={i} className="relative aspect-square rounded-lg bg-white border border-gray-200 overflow-hidden group/edititem">
                         {editingProduct.gallery?.[i] ? (
                           <>

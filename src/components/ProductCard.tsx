@@ -25,6 +25,8 @@ export default function ProductCard({ product }: { product: Product }) {
   const { items, addToCart, removeFromCart } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const displayPrice = product.isOfferActive && product.offerPrice ? product.offerPrice : product.price;
 
@@ -48,7 +50,6 @@ export default function ProductCard({ product }: { product: Product }) {
         `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+2`,
         `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+3`,
         `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+4`,
-        `${product.image || 'https://placehold.co/400x400'}&text=${encodeURIComponent(product.name)}+View+5`,
       ];
 
   const inCart = items.some((i) => 
@@ -67,16 +68,33 @@ export default function ProductCard({ product }: { product: Product }) {
     return () => clearInterval(interval);
   }, [isModalOpen, productImages.length]);
 
-  const nextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const nextImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (productImages.length === 0) return;
     setCurrentImageIndex((prev) => (prev + 1) % productImages.length);
   };
 
-  const prevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const prevImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     if (productImages.length === 0) return;
     setCurrentImageIndex((prev) => (prev - 1 + productImages.length) % productImages.length);
+  };
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEndEvent = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+    if (distance > minSwipeDistance) nextImage();
+    if (distance < -minSwipeDistance) prevImage();
   };
 
   const handleToggleCart = () => {
@@ -146,7 +164,12 @@ export default function ProductCard({ product }: { product: Product }) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Image Section with Slider */}
-            <div className="w-full md:w-1/2 bg-gray-100 relative h-80 md:h-auto overflow-hidden group/slider">
+            <div 
+              className="w-full md:w-1/2 bg-gray-100 relative h-80 md:h-auto overflow-hidden group/slider touch-pan-y"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEndEvent}
+            >
               {productImages.length > 0 && (
                 <Image
                   src={productImages[currentImageIndex] || 'https://placehold.co/400x400/png?text=No+Image'}
@@ -193,18 +216,18 @@ export default function ProductCard({ product }: { product: Product }) {
 
               <div className="flex-1">
                 <span className="text-xs uppercase tracking-widest text-indigo-600 font-bold mb-2 block">Premium Collection</span>
-                <div className="flex items-center gap-4 mb-2">
-                  <h2 className="text-3xl font-bold text-gray-900">{product.name}</h2>
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-2">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">{product.name}</h2>
                   {product.isOfferActive && (
                     <span className="bg-red-100 text-red-600 text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider">
                       Limited Time Offer
                     </span>
                   )}
                 </div>
-                <div className="flex items-baseline gap-3 mb-6">
-                  <p className="text-4xl font-black text-indigo-600 tracking-tight">Rs. {displayPrice.toFixed(2)}</p>
+                <div className="flex flex-wrap items-baseline gap-2 sm:gap-3 mb-6">
+                  <p className="text-3xl sm:text-4xl font-black text-indigo-600 tracking-tight">Rs. {displayPrice.toFixed(2)}</p>
                   {product.isOfferActive && (
-                    <p className="text-xl text-gray-400 line-through font-light decoration-red-400/50">Rs. {product.price.toFixed(2)}</p>
+                    <p className="text-lg sm:text-xl text-gray-400 line-through font-light decoration-red-400/50">Rs. {product.price.toFixed(2)}</p>
                   )}
                 </div>
                 

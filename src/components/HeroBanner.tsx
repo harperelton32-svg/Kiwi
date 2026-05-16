@@ -1,6 +1,6 @@
 export default function HeroBanner() {
   return (
-    <section className="relative h-[70vh] flex items-center justify-center bg-gradient-to-r from-gray-50 to-white">
+    <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center bg-gradient-to-r from-gray-50 to-white">
       <div className="text-center max-w-4xl mx-auto px-4">
         <h1 className="text-4xl md:text-7xl font-bold text-black mb-6 leading-tight">
           KIWI Clothing
