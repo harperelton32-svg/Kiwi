@@ -163,6 +163,36 @@ export default function DesignsPage() {
     }
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isGallery: boolean, index: number = 0, isEditing: boolean = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const base64 = await fileToBase64(file);
+      if (isGallery) {
+        handleGalleryChange(index, base64, isEditing);
+      } else {
+        if (isEditing && editingProduct) {
+          setEditingProduct({ ...editingProduct, image: base64 });
+        } else {
+          setNewProduct({ ...newProduct, image: base64 });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to convert image:', error);
+      alert('Failed to process image. Please try a smaller file.');
+    }
+  };
+
   const handleGalleryChange = (index: number, value: string, isEditing: boolean) => {
     if (isEditing && editingProduct) {
       const newGallery = [...(editingProduct.gallery || ['', '', '', '', ''])];
@@ -281,14 +311,24 @@ export default function DesignsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Image URL</label>
-                  <input
-                    type="text"
-                    value={newProduct.image}
-                    onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                    placeholder="Leave empty for auto-placeholder"
-                  />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Image</label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
+                      {newProduct.image ? (
+                        <Image src={newProduct.image} alt="Preview" fill className="object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        </div>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, false)}
+                      className="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -372,17 +412,33 @@ export default function DesignsPage() {
                 </div>
 
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                  <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Gallery Image Slots</h3>
+                  <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Gallery Images</h3>
                   <div className="grid grid-cols-5 gap-2">
                     {[0, 1, 2, 3, 4].map((i) => (
-                      <input
-                        key={i}
-                        type="text"
-                        value={newProduct.gallery[i]}
-                        onChange={(e) => handleGalleryChange(i, e.target.value, false)}
-                        className="w-full px-2 py-2 bg-white border border-gray-200 rounded-lg text-[10px] focus:ring-2 focus:ring-indigo-500 outline-none"
-                        placeholder={`Img ${i + 1}`}
-                      />
+                      <div key={i} className="relative aspect-square rounded-lg bg-white border border-gray-200 overflow-hidden group/item">
+                        {newProduct.gallery[i] ? (
+                          <>
+                            <Image src={newProduct.gallery[i]} alt={`Gallery ${i}`} fill className="object-cover" />
+                            <button 
+                              type="button"
+                              onClick={() => handleGalleryChange(i, '', false)}
+                              className="absolute inset-0 bg-black/40 opacity-0 group-hover/item:opacity-100 transition-opacity flex items-center justify-center text-white"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                          </>
+                        ) : (
+                          <label className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleImageUpload(e, true, i, false)}
+                              className="hidden"
+                            />
+                            <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                          </label>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -528,14 +584,18 @@ export default function DesignsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Image URL</label>
-                  <input
-                    type="text"
-                    required
-                    value={editingProduct.image}
-                    onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none"
-                  />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Primary Image</label>
+                  <div className="flex items-center gap-4">
+                    <div className="relative w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
+                      <Image src={editingProduct.image} alt="Preview" fill className="object-cover" />
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, false, 0, true)}
+                      className="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                  </div>
                 </div>
 
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
@@ -587,17 +647,31 @@ export default function DesignsPage() {
 
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
                   <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider text-center">Gallery Slider Images</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-5 gap-2">
                     {[0, 1, 2, 3, 4].map((i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold text-gray-400 w-12">Slot {i + 1}</span>
-                        <input
-                          type="text"
-                          value={editingProduct.gallery?.[i] || ''}
-                          onChange={(e) => handleGalleryChange(i, e.target.value, true)}
-                          className="flex-1 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-[10px] focus:ring-2 focus:ring-indigo-500 outline-none"
-                          placeholder="Image URL"
-                        />
+                      <div key={i} className="relative aspect-square rounded-lg bg-white border border-gray-200 overflow-hidden group/edititem">
+                        {editingProduct.gallery?.[i] ? (
+                          <>
+                            <Image src={editingProduct.gallery[i]} alt={`Gallery ${i}`} fill className="object-cover" />
+                            <button 
+                              type="button"
+                              onClick={() => handleGalleryChange(i, '', true)}
+                              className="absolute inset-0 bg-black/40 opacity-0 group-hover/edititem:opacity-100 transition-opacity flex items-center justify-center text-white"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                          </>
+                        ) : (
+                          <label className="w-full h-full flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleImageUpload(e, true, i, true)}
+                              className="hidden"
+                            />
+                            <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
+                          </label>
+                        )}
                       </div>
                     ))}
                   </div>
