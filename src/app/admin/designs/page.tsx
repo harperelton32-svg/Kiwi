@@ -371,13 +371,13 @@ export default function DesignsPage() {
                       placeholder="Color Name (e.g. Sunset Red)"
                       value={customColor.name}
                       onChange={(e) => setCustomColor({ ...customColor, name: e.target.value })}
-                      className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs outline-none"
+                      className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs outline-none min-w-0"
                     />
                     <input 
                       type="color"
                       value={customColor.hex}
                       onChange={(e) => setCustomColor({ ...customColor, hex: e.target.value })}
-                      className="w-10 h-10 p-1 bg-white border border-gray-200 rounded-lg cursor-pointer"
+                      className="w-10 h-10 p-1 bg-white border border-gray-200 rounded-lg cursor-pointer flex-shrink-0"
                     />
                     <button 
                       type="button"
@@ -466,15 +466,40 @@ export default function DesignsPage() {
               ))
             ) : (
               products.map((product) => (
-                <div key={product.id} className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all border border-gray-100 overflow-hidden group">
-                  <div className="aspect-square relative overflow-hidden bg-gray-100">
+                <div key={product.id} className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-all border border-gray-100 overflow-hidden">
+                  <div className="aspect-square relative overflow-hidden bg-gray-100 border-b border-gray-100">
                     <Image
                       src={product.image}
                       alt={product.name}
                       fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="object-cover transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                  </div>
+                  <div className="p-5 flex flex-col gap-4">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900 truncate">{product.name}</h3>
+                      <p className="text-indigo-600 font-extrabold mt-1">Rs. {product.price.toFixed(2)}</p>
+                      
+                      <div className="mt-3 flex justify-between items-center">
+                        <div className="flex -space-x-1">
+                          {(product.colors || []).map((c, i) => (
+                            <div 
+                              key={i} 
+                              className="w-4 h-4 rounded-full border border-white shadow-sm" 
+                              style={{ backgroundColor: c.hex }} 
+                              title={c.name} 
+                            />
+                          ))}
+                        </div>
+                        <div className="flex gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <div key={i} className={`w-1.5 h-1.5 rounded-full ${product.gallery && product.gallery[i] ? 'bg-indigo-400' : 'bg-gray-200'}`} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
                       <button
                         onClick={() => {
                           const gallery = product.gallery && product.gallery.length === 5 
@@ -482,38 +507,18 @@ export default function DesignsPage() {
                             : [product.image, '', '', '', ''];
                           setEditingProduct({ ...product, gallery, colors: product.colors || [] });
                         }}
-                        className="bg-white text-gray-900 p-3 rounded-full hover:bg-indigo-600 hover:text-white transition-all shadow-lg"
+                        className="flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2.5 rounded-xl font-bold transition-colors text-sm"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="bg-white text-red-600 p-3 rounded-full hover:bg-red-600 hover:text-white transition-all shadow-lg"
+                        className="flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 py-2.5 rounded-xl font-bold transition-colors text-sm"
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Delete
                       </button>
-                    </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900 truncate">{product.name}</h3>
-                    <p className="text-indigo-600 font-extrabold mt-1">Rs. {product.price.toFixed(2)}</p>
-                    
-                    <div className="mt-3 flex justify-between items-center">
-                      <div className="flex -space-x-1">
-                        {(product.colors || []).map((c, i) => (
-                          <div 
-                            key={i} 
-                            className="w-4 h-4 rounded-full border border-white" 
-                            style={{ backgroundColor: c.hex }} 
-                            title={c.name} 
-                          />
-                        ))}
-                      </div>
-                      <div className="flex gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <div key={i} className={`w-1.5 h-1.5 rounded-full ${product.gallery && product.gallery[i] ? 'bg-indigo-400' : 'bg-gray-200'}`} />
-                        ))}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -526,8 +531,8 @@ export default function DesignsPage() {
       {/* Edit Modal */}
       {editingProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setEditingProduct(null)}>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="p-8">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="p-5 md:p-8">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Edit Design</h2>
                 <button onClick={() => setEditingProduct(null)} className="text-gray-400 hover:text-gray-600">
@@ -608,13 +613,13 @@ export default function DesignsPage() {
                       placeholder="Color Name"
                       value={customColor.name}
                       onChange={(e) => setCustomColor({ ...customColor, name: e.target.value })}
-                      className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs outline-none"
+                      className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs outline-none min-w-0"
                     />
                     <input 
                       type="color"
                       value={customColor.hex}
                       onChange={(e) => setCustomColor({ ...customColor, hex: e.target.value })}
-                      className="w-10 h-10 p-1 bg-white border border-gray-200 rounded-lg cursor-pointer"
+                      className="w-10 h-10 p-1 bg-white border border-gray-200 rounded-lg cursor-pointer flex-shrink-0"
                     />
                     <button 
                       type="button"

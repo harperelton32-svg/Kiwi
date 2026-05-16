@@ -180,7 +180,7 @@ export default function AdminOrdersPage() {
                     key={status}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, status)}
-                    className={`flex-shrink-0 w-80 rounded-xl shadow-sm border-t-4 ${theme.border} ${theme.bg} flex flex-col snap-center`}
+                    className={`flex-shrink-0 w-[85vw] sm:w-80 max-w-[320px] rounded-xl shadow-sm border-t-4 ${theme.border} ${theme.bg} flex flex-col snap-center`}
                   >
                     <div className="p-4 border-b border-black/5 flex justify-between items-center">
                       <h2 className={`font-bold ${theme.text}`}>{status}</h2>
@@ -251,12 +251,12 @@ export default function AdminOrdersPage() {
             className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all" 
             onClick={e => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-10">
+            <div className="p-4 md:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 bg-white/95 backdrop-blur z-10">
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
                 <p className="text-sm text-gray-500 mt-1">#{selectedOrder.id}</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 self-end sm:self-auto">
                 <button 
                   onClick={() => handleDeleteOrder(selectedOrder.id)}
                   disabled={isDeleting}
@@ -280,7 +280,7 @@ export default function AdminOrdersPage() {
               </div>
             </div>
             
-            <div className="p-6 space-y-8">
+            <div className="p-4 md:p-6 space-y-8">
               {/* Customer Details */}
               <section>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-2">Customer Information</h3>
