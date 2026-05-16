@@ -8,7 +8,7 @@ import Image from "next/image";
 
 interface ColorOption {
   name: string;
-  class: string;
+  hex: string;
 }
 
 interface Product {
@@ -22,16 +22,7 @@ interface Product {
   colors?: ColorOption[];
 }
 
-const COLOR_PRESETS = [
-  { name: 'Black', class: 'bg-black' },
-  { name: 'White', class: 'bg-white border border-gray-200' },
-  { name: 'Indigo', class: 'bg-indigo-600' },
-  { name: 'Red', class: 'bg-red-600' },
-  { name: 'Blue', class: 'bg-blue-600' },
-  { name: 'Green', class: 'bg-green-600' },
-  { name: 'Gray', class: 'bg-gray-500' },
-  { name: 'Beige', class: 'bg-[#F5F5DC]' },
-];
+// Removed COLOR_PRESETS as per user request for hex selection
 
 export default function DesignsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -49,6 +40,7 @@ export default function DesignsPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [storeSettings, setStoreSettings] = useState({ shippingCharge: 0, taxRate: 10 });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [customColor, setCustomColor] = useState({ name: '', hex: '#000000' });
 
   useEffect(() => {
     fetchProducts();
@@ -123,7 +115,7 @@ export default function DesignsPage() {
           isOfferActive: newProduct.isOfferActive,
           image: finalImage,
           gallery: finalGallery,
-          colors: newProduct.colors.length > 0 ? newProduct.colors : COLOR_PRESETS.slice(0, 3)
+          colors: newProduct.colors
         }),
       });
       if (response.ok) {
@@ -183,21 +175,35 @@ export default function DesignsPage() {
     }
   };
 
-  const toggleColor = (color: ColorOption, isEditing: boolean) => {
+  const addCustomColor = (isEditing: boolean) => {
+    if (!customColor.name || !customColor.hex) return;
+    const colorToAdd = { ...customColor };
+    
     if (isEditing && editingProduct) {
-      const currentColors = editingProduct.colors || [];
-      const exists = currentColors.find(c => c.name === color.name);
-      const newColors = exists 
-        ? currentColors.filter(c => c.name !== color.name)
-        : [...currentColors, color];
-      setEditingProduct({ ...editingProduct, colors: newColors });
+      setEditingProduct({ 
+        ...editingProduct, 
+        colors: [...(editingProduct.colors || []), colorToAdd] 
+      });
     } else {
-      const currentColors = newProduct.colors;
-      const exists = currentColors.find(c => c.name === color.name);
-      const newColors = exists 
-        ? currentColors.filter(c => c.name !== color.name)
-        : [...currentColors, color];
-      setNewProduct({ ...newProduct, colors: newColors });
+      setNewProduct({ 
+        ...newProduct, 
+        colors: [...newProduct.colors, colorToAdd] 
+      });
+    }
+    setCustomColor({ name: '', hex: '#000000' });
+  };
+
+  const removeColor = (colorName: string, isEditing: boolean) => {
+    if (isEditing && editingProduct) {
+      setEditingProduct({ 
+        ...editingProduct, 
+        colors: (editingProduct.colors || []).filter(c => c.name !== colorName) 
+      });
+    } else {
+      setNewProduct({ 
+        ...newProduct, 
+        colors: newProduct.colors.filter(c => c.name !== colorName) 
+      });
     }
   };
 
@@ -316,23 +322,52 @@ export default function DesignsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                  <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Available Colors</h3>
+                  <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Product Colors</h3>
+                  
+                  {/* Add Color Form */}
+                  <div className="flex gap-2 mb-6">
+                    <input 
+                      type="text"
+                      placeholder="Color Name (e.g. Sunset Red)"
+                      value={customColor.name}
+                      onChange={(e) => setCustomColor({ ...customColor, name: e.target.value })}
+                      className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs outline-none"
+                    />
+                    <input 
+                      type="color"
+                      value={customColor.hex}
+                      onChange={(e) => setCustomColor({ ...customColor, hex: e.target.value })}
+                      className="w-10 h-10 p-1 bg-white border border-gray-200 rounded-lg cursor-pointer"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => addCustomColor(false)}
+                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-700"
+                    >
+                      Add
+                    </button>
+                  </div>
+
                   <div className="flex flex-wrap gap-3">
-                    {COLOR_PRESETS.map((color) => (
-                      <button
+                    {newProduct.colors.map((color) => (
+                      <div
                         key={color.name}
-                        type="button"
-                        onClick={() => toggleColor(color, false)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
-                          newProduct.colors.find(c => c.name === color.name)
-                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
-                            : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-400'
-                        }`}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-white border-indigo-100"
                       >
-                        <div className={`w-3 h-3 rounded-full ${color.class}`} />
-                        <span className="text-xs font-bold">{color.name}</span>
-                      </button>
+                        <div className="w-3 h-3 rounded-full border border-gray-100" style={{ backgroundColor: color.hex }} />
+                        <span className="text-xs font-bold text-gray-700">{color.name}</span>
+                        <button 
+                          type="button"
+                          onClick={() => removeColor(color.name, false)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                      </div>
                     ))}
+                    {newProduct.colors.length === 0 && (
+                      <p className="text-xs text-gray-400 italic">No colors added yet.</p>
+                    )}
                   </div>
                 </div>
 
@@ -410,7 +445,12 @@ export default function DesignsPage() {
                     <div className="mt-3 flex justify-between items-center">
                       <div className="flex -space-x-1">
                         {(product.colors || []).map((c, i) => (
-                          <div key={i} className={`w-4 h-4 rounded-full border border-white ${c.class}`} title={c.name} />
+                          <div 
+                            key={i} 
+                            className="w-4 h-4 rounded-full border border-white" 
+                            style={{ backgroundColor: c.hex }} 
+                            title={c.name} 
+                          />
                         ))}
                       </div>
                       <div className="flex gap-1">
@@ -499,22 +539,48 @@ export default function DesignsPage() {
                 </div>
 
                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                  <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Available Colors</h3>
+                  <h3 className="text-sm font-bold text-gray-700 mb-4 uppercase tracking-wider">Product Colors</h3>
+                  
+                  {/* Add Color Form */}
+                  <div className="flex gap-2 mb-6">
+                    <input 
+                      type="text"
+                      placeholder="Color Name"
+                      value={customColor.name}
+                      onChange={(e) => setCustomColor({ ...customColor, name: e.target.value })}
+                      className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-xs outline-none"
+                    />
+                    <input 
+                      type="color"
+                      value={customColor.hex}
+                      onChange={(e) => setCustomColor({ ...customColor, hex: e.target.value })}
+                      className="w-10 h-10 p-1 bg-white border border-gray-200 rounded-lg cursor-pointer"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => addCustomColor(true)}
+                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-indigo-700"
+                    >
+                      Add
+                    </button>
+                  </div>
+
                   <div className="flex flex-wrap gap-3">
-                    {COLOR_PRESETS.map((color) => (
-                      <button
+                    {(editingProduct.colors || []).map((color) => (
+                      <div
                         key={color.name}
-                        type="button"
-                        onClick={() => toggleColor(color, true)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all ${
-                          (editingProduct.colors || []).find(c => c.name === color.name)
-                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md'
-                            : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-400'
-                        }`}
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-full border bg-white border-indigo-100"
                       >
-                        <div className={`w-3 h-3 rounded-full ${color.class}`} />
-                        <span className="text-xs font-bold">{color.name}</span>
-                      </button>
+                        <div className="w-3 h-3 rounded-full border border-gray-100" style={{ backgroundColor: color.hex }} />
+                        <span className="text-xs font-bold text-gray-700">{color.name}</span>
+                        <button 
+                          type="button"
+                          onClick={() => removeColor(color.name, true)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                      </div>
                     ))}
                   </div>
                 </div>

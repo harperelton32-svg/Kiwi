@@ -7,7 +7,7 @@ import { useCart } from "@/context/CartContext";
 
 interface ColorOption {
   name: string;
-  class: string;
+  hex: string;
 }
 
 interface Product {
@@ -34,9 +34,9 @@ export default function ProductCard({ product }: { product: Product }) {
   const colors = (product.colors && product.colors.length > 0)
     ? product.colors
     : [
-        { name: 'Midnight Black', class: 'bg-black' },
-        { name: 'Cotton White', class: 'bg-white border border-gray-200' },
-        { name: 'Royal Indigo', class: 'bg-indigo-600' }
+        { name: 'Midnight Black', hex: '#000000' },
+        { name: 'Cotton White', hex: '#ffffff' },
+        { name: 'Royal Indigo', hex: '#4f46e5' }
       ];
   const sizes = ['S', 'M', 'L', 'XL'];
 
@@ -124,12 +124,14 @@ export default function ProductCard({ product }: { product: Product }) {
              </span>
           </div>
         </div>
-        <h3 className="font-medium text-sm mb-1 group-hover:text-indigo-600 transition-colors">{product.name}</h3>
-        <div className="flex items-center gap-2">
-          <p className={`font-bold ${product.isOfferActive ? 'text-red-600' : 'text-gray-900'}`}>Rs. {displayPrice}</p>
-          {product.isOfferActive && (
-            <p className="text-gray-400 line-through text-xs italic">Rs. {product.price}</p>
-          )}
+        <div className="text-center">
+          <h3 className="font-medium text-sm mb-1 group-hover:text-indigo-600 transition-colors truncate px-2">{product.name}</h3>
+          <div className="flex items-center justify-center gap-2">
+            <p className={`font-bold ${product.isOfferActive ? 'text-red-600' : 'text-gray-900'}`}>Rs. {displayPrice}</p>
+            {product.isOfferActive && (
+              <p className="text-gray-400 line-through text-xs italic">Rs. {product.price}</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -217,7 +219,8 @@ export default function ProductCard({ product }: { product: Product }) {
                       <button
                         key={color.name}
                         onClick={() => setSelectedColor(color.name)}
-                        className={`w-10 h-10 rounded-full transition-all transform hover:scale-110 ${color.class} ${
+                        style={{ backgroundColor: color.hex }}
+                        className={`w-10 h-10 rounded-full transition-all transform hover:scale-110 border border-gray-200 ${
                           selectedColor === color.name ? 'ring-4 ring-indigo-200 ring-offset-2' : ''
                         }`}
                         title={color.name}
