@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "main": ".open-next/worker.js",
   "name": "kiwi",
-  "compatibility_date": "2026-05-15",
+  "compatibility_date": "2026-05-16",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
@@ -20,7 +20,7 @@
   "kv_namespaces": [
     {
       "binding": "DATA",
-      "id": "placeholder-id-will-be-synced-later"
+      "id": "0a7c14b22d7a4cc29a829cbb1d290b9b"
     }
   ],
   "observability": {
