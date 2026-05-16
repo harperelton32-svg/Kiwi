@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const orderData = await request.json();
+    const orderData = await request.json() as any;
     const orders = await getKVData('orders') || [];
 
     const newOrder = {
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { id, status } = await request.json();
+    const { id, status } = await request.json() as any;
     if (!id || !status) {
       return NextResponse.json({ error: 'Missing id or status' }, { status: 400 });
     }
@@ -59,7 +59,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json();
+    const { id } = await request.json() as any;
     if (!id) {
       return NextResponse.json({ error: 'Missing id' }, { status: 400 });
     }

@@ -10,7 +10,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const product = await request.json();
+    const product = await request.json() as any;
     const products = await getKVData('products') || [];
     
     const newProduct = {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const updatedProduct = await request.json();
+    const updatedProduct = await request.json() as any;
     const products = await getKVData('products') || [];
     
     const index = products.findIndex((p: any) => p.id === updatedProduct.id);
@@ -48,7 +48,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json();
+    const { id } = await request.json() as any;
     const products = await getKVData('products') || [];
     
     const filteredProducts = products.filter((p: any) => p.id !== id);
