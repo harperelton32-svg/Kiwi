@@ -14,7 +14,7 @@ export default function Home() {
     async function fetchProducts() {
       try {
         const response = await fetch('/api/products');
-        const data = await response.json() as Product[];
+        const data = await response.json();
         setProducts(data.slice(0, 8)); // Just show first 8 as featured
       } catch (error) {
         console.error('Failed to fetch products:', error);

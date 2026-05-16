@@ -14,7 +14,7 @@ export default function Shop() {
     async function fetchProducts() {
       try {
         const response = await fetch('/api/products');
-        const data = await response.json() as Product[];
+        const data = await response.json();
         setProducts(data);
       } catch (error) {
         console.error('Failed to fetch products:', error);

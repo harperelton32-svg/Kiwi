@@ -29,7 +29,7 @@ export default function CartPage() {
   async function fetchSettings() {
     try {
       const response = await fetch('/api/settings');
-      const data = await response.json() as { shippingCharge: number; taxRate: number };
+      const data = await response.json();
       setStoreSettings(data);
     } catch (error) {
       console.error('Failed to fetch settings:', error);
@@ -39,7 +39,7 @@ export default function CartPage() {
   async function fetchProductOptions(id: string) {
     try {
       const response = await fetch('/api/products');
-      const products = await response.json() as any[];
+      const products = await response.json();
       const product = products.find((p: any) => p.id.toString() === id.toString());
       
       if (product && product.colors && product.colors.length > 0) {

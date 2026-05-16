@@ -1,11 +1,11 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getRequestContext } from "@opennextjs/cloudflare";
 import fs from 'fs';
 import path from 'path';
 
 export async function getKVData(key: string) {
   // Try Cloudflare KV first (Production/Preview)
   try {
-    const ctx = getCloudflareContext();
+    const ctx = getRequestContext();
     if (ctx && ctx.env && ctx.env.DATA) {
       const value = await ctx.env.DATA.get(key);
       return value ? JSON.parse(value) : null;
@@ -30,7 +30,7 @@ export async function getKVData(key: string) {
 export async function setKVData(key: string, value: any) {
   // Try Cloudflare KV first
   try {
-    const ctx = getCloudflareContext();
+    const ctx = getRequestContext();
     if (ctx && ctx.env && ctx.env.DATA) {
       await ctx.env.DATA.put(key, JSON.stringify(value));
       return;
