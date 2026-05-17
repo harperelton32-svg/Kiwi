@@ -275,27 +275,33 @@ export default function ProductCard({ product }: { product: Product }) {
               </div>
 
               <div className="mt-auto space-y-3">
-                <button
-                  onClick={handleToggleCart}
-                  disabled={!selectionComplete}
-                  className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform shadow-md ${
-                    !selectionComplete
-                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : inCart 
-                        ? "bg-red-50 text-red-600 border-2 border-red-200 hover:bg-red-100 hover:scale-[1.02]" 
+                {inCart ? (
+                  <>
+                    <Link 
+                      href="/cart"
+                      className="w-full py-4 rounded-xl font-bold text-lg text-center block bg-black text-white hover:bg-gray-900 transition-all transform hover:scale-[1.02] active:scale-95 shadow-md"
+                    >
+                      View Cart
+                    </Link>
+                    <button
+                      onClick={handleToggleCart}
+                      className="w-full py-4 rounded-xl font-bold text-lg transition-all transform shadow-sm bg-red-50 text-red-600 border-2 border-red-200 hover:bg-red-100 hover:scale-[1.02]"
+                    >
+                      Remove from Cart
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={handleToggleCart}
+                    disabled={!selectionComplete}
+                    className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform shadow-md ${
+                      !selectionComplete
+                        ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                         : "bg-black text-white hover:bg-gray-900 hover:scale-[1.02] active:scale-95"
-                  }`}
-                >
-                  {!selectionComplete ? "Select Color & Size" : inCart ? "Remove from Cart" : "Add to Cart"}
-                </button>
-
-                {inCart && (
-                  <Link 
-                    href="/cart"
-                    className="w-full py-4 rounded-xl font-bold text-lg text-center block bg-gray-100 text-gray-900 hover:bg-gray-200 transition-all transform hover:scale-[1.02] active:scale-95 shadow-sm"
+                    }`}
                   >
-                    View Cart
-                  </Link>
+                    {!selectionComplete ? "Select Color & Size" : "Add to Cart"}
+                  </button>
                 )}
               </div>
             </div>
