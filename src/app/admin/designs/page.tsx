@@ -188,7 +188,7 @@ export default function DesignsPage() {
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
+            resolve(canvas.toDataURL('image/webp', 0.8));
           } else {
             resolve(reader.result as string);
           }

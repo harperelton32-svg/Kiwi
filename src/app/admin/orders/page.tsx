@@ -24,6 +24,7 @@ interface Order {
     quantity: number;
     color?: string;
     size?: string;
+    image?: string;
   }>;
   total: number;
   status?: string;
@@ -297,6 +298,22 @@ export default function AdminOrdersPage() {
                     <p className="text-gray-500 mb-1 text-xs uppercase tracking-wider font-semibold">Phone</p>
                     <p className="font-medium text-gray-900">{selectedOrder.customerDetails.phone}</p>
                   </div>
+                  <div>
+                    <p className="text-gray-500 mb-1 text-xs uppercase tracking-wider font-semibold">Order Stage</p>
+                    <select
+                      value={selectedOrder.status || 'Pending'}
+                      onChange={(e) => {
+                        handleStatusChange(selectedOrder.id, e.target.value);
+                        setSelectedOrder({ ...selectedOrder, status: e.target.value });
+                      }}
+                      disabled={updatingStatus === selectedOrder.id}
+                      className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all disabled:opacity-50 cursor-pointer"
+                    >
+                      {STATUSES.map(status => (
+                        <option key={status} value={status}>{status}</option>
+                      ))}
+                    </select>
+                  </div>
                   <div className="sm:col-span-2 mt-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
                     <p className="text-gray-500 mb-2 text-xs uppercase tracking-wider font-semibold">Shipping Address</p>
                     <p className="font-medium text-gray-900">{selectedOrder.customerDetails.address}</p>
@@ -312,6 +329,11 @@ export default function AdminOrdersPage() {
                   {selectedOrder.items.map((item, idx) => (
                     <div key={idx} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
                       <div className="flex items-center gap-3">
+                        {item.image && (
+                          <div className="w-12 h-12 bg-gray-100 rounded-md overflow-hidden flex-shrink-0 border border-gray-200">
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                        )}
                         <span className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-sm font-bold shadow-sm">x{item.quantity}</span>
                         <div>
                           <p className="text-gray-900 font-medium">{item.name}</p>
